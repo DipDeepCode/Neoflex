@@ -1,31 +1,20 @@
 package ru.ddc.vacationpaycalculator.config;
 
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.core.env.Environment;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 import ru.ddc.vacationpaycalculator.exceptions.SetConfigValueException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.List;
 
-@Configuration
+@Component
+@ConfigurationProperties(prefix = "vcp")
 public class VcpConfig {
     private BigDecimal averageNumberOfDaysInMonth;
     private BigDecimal personalIncomeTaxValueAsPercentage;
-    private final Environment environment;
-
-    @Autowired
-    public VcpConfig(Environment environment) {
-        this.environment = environment;
-    }
-
-    @PostConstruct
-    public void setDefaultValues() {
-        setAverageNumberOfDaysInMonth(
-                environment.getProperty("vcp.averageNumberOfDaysInMonth", "29.3"));
-        setPersonalIncomeTaxValueAsPercentage(
-                environment.getProperty("vcp.personalIncomeTaxValueAsPercentage", "13"));
-    }
+    private List<LocalDate> daysThatNotPaid;
 
     public void setAverageNumberOfDaysInMonth(String value) {
         BigDecimal averageNumberOfDaysInMonth;
@@ -39,6 +28,10 @@ public class VcpConfig {
             throw new SetConfigValueException("Incorrect value: " + value);
         }
         this.averageNumberOfDaysInMonth = averageNumberOfDaysInMonth;
+    }
+
+    public BigDecimal getAverageNumberOfDaysInMonth() {
+        return new BigDecimal(averageNumberOfDaysInMonth.toString());
     }
 
     public void setPersonalIncomeTaxValueAsPercentage(String value) {
@@ -55,11 +48,23 @@ public class VcpConfig {
         this.personalIncomeTaxValueAsPercentage = personalIncomeTaxValueAsPercentage;
     }
 
-    public BigDecimal getAverageNumberOfDaysInMonth() {
-        return new BigDecimal(averageNumberOfDaysInMonth.toString());
-    }
-
     public BigDecimal getPersonalIncomeTaxValueAsPercentage() {
         return new BigDecimal(personalIncomeTaxValueAsPercentage.toString());
+    }
+
+    public void setDaysThatNotPaid(List<LocalDate> daysThatNotPaid) {
+        this.daysThatNotPaid = daysThatNotPaid;
+    }
+
+    public void addDaysThatNotPaid(List<LocalDate> daysThatNotPaid) {
+        this.daysThatNotPaid.addAll(daysThatNotPaid);
+    }
+
+    public void removeDaysThatNotPaid(List<LocalDate> daysThatNotPaid) {
+        this.daysThatNotPaid.removeAll(daysThatNotPaid);
+    }
+
+    public List<LocalDate> getDaysThatNotPaid() {
+        return Collections.unmodifiableList(daysThatNotPaid);
     }
 }
