@@ -3,6 +3,7 @@ package ru.ddc.vacationpaycalculator.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.ddc.vacationpaycalculator.config.VcpConfig;
+import ru.ddc.vacationpaycalculator.dto.VcpResponse;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -20,7 +21,7 @@ public class VacationPayService {
         this.vcpConfig = vcpConfig;
     }
 
-    public BigDecimal calculateVacationPay(BigDecimal averageMonthSalary, long numberOfDaysToBePayed) {
+    public VcpResponse calculateVacationPay(BigDecimal averageMonthSalary, long numberOfDaysToBePayed) {
 
         averageMonthSalary = averageMonthSalary.setScale(12, HALF_UP);
         BigDecimal averageDaysInMonth = vcpConfig.getAverageNumberOfDaysInMonth();
@@ -28,10 +29,10 @@ public class VacationPayService {
         BigDecimal vacationPay = averageDaySalary.multiply(BigDecimal.valueOf(numberOfDaysToBePayed)).setScale(2, DOWN);
         BigDecimal taxValue = vcpConfig.getPersonalIncomeTaxValueAsPercentage();
         BigDecimal tax = vacationPay.multiply(taxValue).divide(new BigDecimal("100"), DOWN);
-        return vacationPay.subtract(tax);
+        return new VcpResponse(vacationPay.subtract(tax));
     }
 
-    public BigDecimal calculateVacationPay(BigDecimal averageMonthSalary, Integer vacationDuration,
+    public VcpResponse calculateVacationPay(BigDecimal averageMonthSalary, Integer vacationDuration,
                                            LocalDate vacationStartDate) {
         long numberOfDaysToBePayed = Stream
                 .iterate(vacationStartDate, date -> date.plusDays(1))
